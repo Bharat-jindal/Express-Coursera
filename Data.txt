@@ -1,0 +1,57 @@
+{
+
+	"name":"gulab jamun",
+
+	"discription":"sweet indian dish",
+
+	"image":"nlsdu/sdjijkk44d.jdp",
+	"category":"oily",
+
+	"label":"labelsdfsf",
+	"price":4.99,
+	"featured":"true",
+
+	"comments":[
+
+		{
+
+			"authur":"bharat",
+
+			"rating":4,
+
+			"comment":"Good in taste"
+
+		},
+
+		{
+
+			"authur":"sonu",
+
+			"rating":4,
+
+			"comment":"Good in taste,Must try"
+
+		}
+
+		]
+
+	
+}
+
+
+
+
+
+{
+
+	"name":"bharat",
+
+	"image":"imageUrl",
+
+	"designation":"Chief Executive Officer",
+
+	"abbr":"CEO",
+
+	"description":"A very good leader"
+
+}
