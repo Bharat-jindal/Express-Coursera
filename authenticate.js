@@ -39,4 +39,15 @@ exports.jwtPassport=passport.use(new JwtStreategy(opts,
         })
     }));
 
-    exports.verifyUser=passport.authenticate('jwt',{session:false})
+    exports.verifyUser=passport.authenticate('jwt',{session:false});
+    
+    exports.verifyAdmin=()=>{
+        return (req,res,next)=>{
+            if(req.user.admin===true){
+                next();
+            }
+            else{
+                res.status(403).send('You are not authorized to do this Operation')
+            }
+        }
+    }

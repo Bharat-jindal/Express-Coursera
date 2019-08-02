@@ -13,6 +13,7 @@ const dishRouter=require('./routers/dishRouter');
 const promptionRouter=require('./routers/promotionRouter');
 const leadersRouter=require('./routers/leadersRouter');
 const userRouter=require('./routers/usersRouter');
+const uploadRouter=require('./routers/uploadRouter');
 
 const mongoose=require('mongoose');
 mongoose.Promise=require('bluebird');
@@ -41,6 +42,7 @@ app.use(express.static(__dirname+'/public'));
 app.use('/dishes',dishRouter);
 app.use('/promotions',promptionRouter);
 app.use('/leaders',leadersRouter);
+app.use('/imageUpload',uploadRouter);
 
 const port=3000;
 const hostname='localhost';

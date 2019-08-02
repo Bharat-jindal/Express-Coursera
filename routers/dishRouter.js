@@ -28,11 +28,11 @@ dishRouter.route('/')
     },err=>{next(err)})
     .catch(err=>next(err))
 })
-.put(authenticate.verifyUser,(req,res,next)=>{
+.put(authenticate.verifyUser,authenticate.verifyAdmin(),(req,res,next)=>{
     res.statusCode=403;
     res.end('put operationnot supported')
 })
-.delete(authenticate.verifyUser,(req,res,next)=>{
+.delete(authenticate.verifyUser,authenticate.verifyAdmin(),(req,res,next)=>{
     Dishes.deleteMany({})
     .then(resp=>{
         res.statusCode=200;
@@ -56,7 +56,7 @@ dishRouter.route('/:dishId')
 .post(authenticate.verifyUser,(req,res,next)=>{
     res.end('Not supported this post operation ')
 })
-.put(authenticate.verifyUser,(req,res,next)=>{
+.put(authenticate.verifyUser,authenticate.verifyAdmin(),(req,res,next)=>{
     Dishes.findByIdAndUpdate(req.params.dishId,{
         $set:req.body
     },{new:true})
@@ -67,7 +67,7 @@ dishRouter.route('/:dishId')
     },err=>{next(err)})
     .catch(err=>next(err))
 })
-.delete(authenticate.verifyUser,(req,res,next)=>{
+.delete(authenticate.verifyUser,authenticate.verifyAdmin(),(req,res,next)=>{
     Dishes.findByIdAndDelete(req.params.dishId)
     .then(dish=>{
         res.statusCode=200;
@@ -139,7 +139,11 @@ dishRouter.route('/:dishId/comments')
     .then(dish=>{
         if(dish!==null){
             for(let i=(dish.comments.length-1);i>=0;i--){
-                dish.comments.id(dish.comments[0]._id).remove();
+                if(dish.comments[i].authur.toString()===req.user._id.toString()){
+                    console.log(dish.comments[i].authur,req.user._id)
+                    console.log(dish.comments[i].authur.toString(),req.user._id.toString())
+                    dish.comments.id(dish.comments[i]._id).remove();
+                }
             }
             dish.save()
             .then((dish)=>{
@@ -205,29 +209,34 @@ dishRouter.route('/:dishId/comments/:commentId')
 .put(authenticate.verifyUser,(req,res,next)=>{
     Dishes.findById(req.params.dishId)
     .then(dish=>{
-        if(dish!==null && dish.comments.id(req.params.commentId)!==null){
-            if(req.body.rating){
-                dish.comments.id(req.params.commentId).rating=req.body.rating;
-            }if(req.body.comment){
-                dish.comments.id(req.params.commentId).comment=req.body.comment;
+        if(dish.comments.id(req.param.commentId).authur.toString()===req.user._id.toString()){
+            if(dish!==null && dish.comments.id(req.params.commentId)!==null){
+                if(req.body.rating){
+                    dish.comments.id(req.params.commentId).rating=req.body.rating;
+                }if(req.body.comment){
+                    dish.comments.id(req.params.commentId).comment=req.body.comment;
+                }
+                dish.save()
+                .then(dish=>{
+                    res.statusCode=200;
+                    res.setHeader('Content-Type','application/json')
+                    res.json(dish.comments.id(req.params.commentId))
+                })
+                
             }
-            dish.save()
-            .then(dish=>{
-                res.statusCode=200;
-                res.setHeader('Content-Type','application/json')
-                res.json(dish.comments.id(req.params.commentId))
-            })
-            
-        }
-        else if(dish==null){
-            var err =new Error(`Dish with id ${req.param.dishId} does not found`);
-            err.status=404;
-            return next(err)
+            else if(dish==null){
+                var err =new Error(`Dish with id ${req.param.dishId} does not found`);
+                err.status=404;
+                return next(err)
+            }
+            else{
+                var err =new Error(`Comment with id ${req.param.commentId} does not found in this dish`);
+                err.status=404;
+                return next(err)
+            }
         }
         else{
-            var err =new Error(`Comment with id ${req.param.commentId} does not found in this dish`);
-            err.status=404;
-            return next(err)
+            res.status(403).send('You are not Authorized to do this operation')
         }
         
     },err=>{next(err)})
@@ -236,24 +245,29 @@ dishRouter.route('/:dishId/comments/:commentId')
 .delete(authenticate.verifyUser,(req,res,next)=>{
     Dishes.findById(req.params.dishId)
     .then(dish=>{
-        if(dish!==null && dish.comments.id(req.params.commentId)!==null){
-            dish.comments.id(req.params.commentId).remove();
-            dish.save()
-            .then((dish)=>{
-                res.statusCode=200;
-                res.setHeader('Content-Type','application/json')
-                res.json(dish)
-            })
-        }
-        else if (dish==null){
-            var err =new Error(`Dish with id ${req.param.dishId} does not found`);
-            err.status=404;
-            return next(err)
+        if(dish.comments.id(req.params.commentId).authur.toString()===req.user._id.toString()){
+            if(dish!==null && dish.comments.id(req.params.commentId)!==null){
+                dish.comments.id(req.params.commentId).remove();
+                dish.save()
+                .then((dish)=>{
+                    res.statusCode=200;
+                    res.setHeader('Content-Type','application/json')
+                    res.json(dish)
+                })
+            }
+            else if (dish==null){
+                var err =new Error(`Dish with id ${req.param.dishId} does not found`);
+                err.status=404;
+                return next(err)
+            }
+            else{
+                var err =new Error(`Comment with id ${req.param.commentId} does not found in this dish`);
+                err.status=404;
+                return next(err)
+            }
         }
         else{
-            var err =new Error(`Comment with id ${req.param.commentId} does not found in this dish`);
-            err.status=404;
-            return next(err)
+            res.status(403).send('You are not Authorized to do this operation')
         }
         
         
